@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abi Rechner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 14px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            background: #38bdf8;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .subject {
+            background: #334155;
+            padding: 8px;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #0ea5e9;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h1>Abi Durchschnitts-Rechner</h1>
+
+        <div id="subjects"></div>
+
+        <button onclick="addSubject()">+ Fach hinzufügen</button>
+        <button onclick="calculateAverage()">Durchschnitt berechnen</button>
+
+        <div class="result" id="result">—</div>
+    </div>
+
+    <script>
+        // Conversion table points -> grade
+        const pointToGrade = {
+            15: 1.0, 14: 1.0, 13: 1.3, 12: 1.7, 11: 2.0,
+            10: 2.3, 9: 2.7, 8: 3.0, 7: 3.3, 6: 3.7,
+            5: 4.0, 4: 4.3, 3: 4.7, 2: 5.0, 1: 5.3, 0: 6.0
+        };
+
+        // Add new subject input row
+        function addSubject() {
+            const div = document.createElement("div");
+            div.className = "subject";
+            div.innerHTML = `
+        <input type="number" placeholder="Punkte (0–15)" min="0" max="15" class="points">
+        <input type="number" placeholder="Note (1.0–6.0)" step="0.1" min="1" max="6" class="grade">
+    `;
+            document.getElementById("subjects").appendChild(div);
+        }
+
+        // Calculate average from all inputs
+        function calculateAverage() {
+            let grades = [];
+            let subjects = document.querySelectorAll(".subject");
+
+            subjects.forEach(sub => {
+                let p = sub.querySelector(".points").value;
+                let g = sub.querySelector(".grade").value;
+
+                // If points entered, convert to grade
+                if (p !== "") {
+                    let grade = pointToGrade[Math.round(p)];
+                    if (grade) grades.push(grade);
+                }
+                // If grade entered directly
+                else if (g !== "") {
+                    grades.push(parseFloat(g));
+                }
+            });
+
+            if (grades.length === 0) {
+                result.innerText = "Keine Werte!";
+                return;
+            }
+
+            // Compute arithmetic mean
+            let avg = grades.reduce((a, b) => a + b, 0) / grades.length;
+
+            // Convert average grade back to approximate points
+            let closestPoints = Object.keys(pointToGrade).reduce((prev, curr) =>
+                Math.abs(pointToGrade[curr] - avg) < Math.abs(pointToGrade[prev] - avg) ? curr : prev
+            );
+
+            document.getElementById("result").innerText =
+                "Ø Note: " + avg.toFixed(2) + " | ≈ Ø Punkte: " + closestPoints;
+        }
+
+        // Add first subject automatically
+        addSubject();
+    </script>
+
+</body>
+
+</html>
